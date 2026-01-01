@@ -1,0 +1,351 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sistem Input Tugas Liburan Santri Putra - Malika Islamic Boarding School</title>
+    <!-- Tailwind CSS CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- React & Babel CDN (Untuk menjalankan JSX langsung di browser) -->
+    <script src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
+    <script src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
+    <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+    <!-- Lucide Icons -->
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap');
+        body { font-family: 'Plus Jakarta Sans', sans-serif; }
+    </style>
+</head>
+<body class="bg-slate-50">
+    <div id="root"></div>
+
+    <script type="text/babel">
+        const { useState, useEffect } = React;
+
+        const studentData = {
+            'Kelas 7 A Putra': ["Athariz Chalief Saputra", "Ahmad Khomaini", "Al Athar Ghaizan Nobel", "Alzabar Akbar", "Arya Devano", "Abyan Dzaky Hafizh Kurniawan", "Fadil Syafif Nugroho Sukri", "Fakhri Muhammad Mumtaz", "I Komang Raditiya Novian Pradana Putra", "Ibad Najwan", "Ibni Shidqie Al Mumtazhar", "Kenzie Dastan Shalahuddin Zan", "Khaerul A'Zam Ismail", "Khairiy Rezki Adhinata", "Lionel Pratama Nugroho", "Mahfidz Ardiansyah", "Mohamad Akromul Azam", "Mohammad Ezra Rafiandhika", "Muhammad Akhtar Al Hisyam", "Muhammad Al Fatih", "Muhammad Fatir Albahri", "Muhammad Naufal Rizki", "Muhammad Syamil At Tsauri", "Nauval Abdul Rasyid", "Pranatantra Fachrie", "Rajata Ibnu Faqih", "Reygi Antajun Hikaru", "Rifqi Irfan Hamizan", "Umar Al Jailaani", "Yossa Dzulfi Andrean", "Zahran Sahil", "Rizky Setyo Nugroho", "Teuku Rizqi Mutha"],
+            'Kelas 7 B Putra': ["Abidzar Nuha Wafi", "Ach. Raihan Faiz As-Sudaisyi", "Ahmad Nazmu Durori", "Akbar Nurfatah Arsadi", "Akhdan Athaya Putra Zulfikar", "Al Barra Ananta Putra", "Annabighoh Syabanu Gunawan", "Arrais Mahardika Rusli", "Athaya Kaysan Hakim", "Aufa Gilang Pratama", "Bilal Abdul Aslam", "Bintang Dasilva Ibrahim", "Brilliant Alziddan Mustofa", "Denny Maulana Yusuf", "Fathir Muhammad Fadhilah", "Haikal Ahfwan", "Harry Harsya Shiddiq", "Ifan Sofyan", "Kenzie Adelio Tristan", "Khairul Walif", "Luthfirrahman Nafis Hananto", "Muhammad Al-gaza Putra Dewian", "Muhammad Arafa Ekiyano Febrian", "Muhammad Dilfa Fattan", "Muhammad Fahriansyah", "Muhammad Fathan Toriq", "Muhammad Haikal Al Faisya", "Muhammad Najetullah", "Muhammad Raditya Fauzan", "Muhammad Waldan", "Rayhan Faiz Abdillah Hadiyanto", "Sultan Fatih Setiawan", "Zhafran Tata Hidayat"],
+            'Kelas 10 Putra': ["Adhwa Arsya Gatfan", "Afa Zaidan Putra Tamba", "Ahmad Rafli Dhani Muzakki", "Akmal Ihsan Huwaidi", "Albisna Zinata Ababil", "Asyraf Fairuz Mumtaz", "Attiq Muzaki Ibrahim", "Bayanaca Qotthon Elbarca", "Bazyli Rafif Azka", "Charli Andestian", "Danendra Apta Kayana", "Dhafinzha Muhammad Fakhri", "Fasabbi Haqiqie Pramada Rozak", "Irsyad Haitami Fajrin", "Mikail Abdul Majid", "Mochammad Alfath Dhafin", "Muaimar Ghadafi M. Asri", "Muhamad Fairuz Azmi", "Muhamad Rafka Alvaro", "Muhammad Adil Shidqi", "Muhammad Agla Alfathur Rahman", "Muhammad Ammar Muzakki", "Muhammad Azmi", "Muhammad Fahri Alfarizi", "Muhammad Fahri Rosadi", "Muhammad Suryo Nugroho Putra Anwar", "Nawwaf Bilza Pakpahan", "Raditya Bustanul Tamam", "Raihan Ramadhan", "Salim Al Habsyi", "Sayyid Aqil Sakhiy Wahyudi", "Yudha Pratama Nurwicaksana Nasution"]
+        };
+
+        const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbxnwNGAPw0f4pSR00XwTLlg3ggRoUfF2JfLekvMNfBGniGU8wqgGfo503W1hprfdsM1WQ/exec";
+
+        function App() {
+            const [showIntro, setShowIntro] = useState(true);
+            const [selectedClass, setSelectedClass] = useState('');
+            const [selectedName, setSelectedName] = useState('');
+            const [videoLink, setVideoLink] = useState('');
+            const [files, setFiles] = useState({
+                murajaahFile: null,
+                arabicVocab: null
+            });
+            const [status, setStatus] = useState('idle');
+            const [isUploadingInBackground, setIsUploadingInBackground] = useState(false);
+
+            useEffect(() => {
+                // Initialize Lucide icons
+                if (window.lucide) {
+                    window.lucide.createIcons();
+                }
+            }, [showIntro, status, files, selectedClass]);
+
+            const handleFileChange = (e, key) => {
+                const file = e.target.files[0];
+                if (file) {
+                    if (file.size > 15 * 1024 * 1024) { 
+                        alert("Ukuran foto terlalu besar. Maksimal 15MB.");
+                        return;
+                    }
+                    setFiles(prev => ({ ...prev, [key]: file }));
+                }
+            };
+
+            const compressImage = (file) => {
+                return new Promise((resolve) => {
+                    const reader = new FileReader();
+                    reader.readAsDataURL(file);
+                    reader.onload = (event) => {
+                        const img = new Image();
+                        img.src = event.target.result;
+                        img.onload = () => {
+                            const canvas = document.createElement('canvas');
+                            let width = img.width;
+                            let height = img.height;
+                            const MAX_SIZE = 1200;
+                            if (width > height) {
+                                if (width > MAX_SIZE) { height *= MAX_SIZE / width; width = MAX_SIZE; }
+                            } else {
+                                if (height > MAX_SIZE) { width *= MAX_SIZE / height; height = MAX_SIZE; }
+                            }
+                            canvas.width = width;
+                            canvas.height = height;
+                            const ctx = canvas.getContext('2d');
+                            ctx.drawImage(img, 0, 0, width, height);
+                            resolve({
+                                data: canvas.toDataURL('image/jpeg', 0.7).split(',')[1],
+                                mimeType: 'image/jpeg'
+                            });
+                        };
+                    };
+                });
+            };
+
+            const toBase64 = (file) => new Promise((resolve, reject) => {
+                const reader = new FileReader();
+                reader.readAsDataURL(file);
+                reader.onload = () => resolve(reader.result.split(',')[1]);
+                reader.onerror = error => reject(error);
+            });
+
+            const handleSubmit = (e) => {
+                e.preventDefault();
+                const currentUploadData = {
+                    kelas: selectedClass,
+                    nama: selectedName,
+                    videoLink: videoLink,
+                    files: { ...files },
+                    timestamp: new Date().toLocaleString('id-ID')
+                };
+
+                setStatus('success');
+                setIsUploadingInBackground(true);
+                setFiles({ murajaahFile: null, arabicVocab: null });
+                setVideoLink('');
+                setSelectedClass('');
+                setSelectedName('');
+
+                (async () => {
+                    try {
+                        const payload = {
+                            timestamp: currentUploadData.timestamp,
+                            kelas: currentUploadData.kelas,
+                            nama: currentUploadData.nama,
+                            videoLink: currentUploadData.videoLink,
+                            files: {}
+                        };
+
+                        for (const [key, file] of Object.entries(currentUploadData.files)) {
+                            if (file) {
+                                if (file.type.startsWith('image/')) {
+                                    const compressed = await compressImage(file);
+                                    payload.files[key] = {
+                                        data: compressed.data,
+                                        name: `${currentUploadData.nama}_${key}.jpg`,
+                                        mimeType: compressed.mimeType
+                                    };
+                                } else {
+                                    const base64Data = await toBase64(file);
+                                    payload.files[key] = {
+                                        data: base64Data,
+                                        name: `${currentUploadData.nama}_${key}_${file.name}`,
+                                        mimeType: file.type
+                                    };
+                                }
+                            }
+                        }
+
+                        await fetch(SCRIPT_URL, {
+                            method: 'POST',
+                            mode: 'no-cors',
+                            headers: { 'Content-Type': 'application/json' },
+                            body: JSON.stringify(payload)
+                        });
+                    } catch (error) {
+                        console.error('Background Upload Error:', error);
+                    } finally {
+                        setIsUploadingInBackground(false);
+                    }
+                })();
+            };
+
+            if (showIntro) {
+                return (
+                    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/80 backdrop-blur-sm">
+                        <div className="bg-white rounded-[2.5rem] max-w-lg w-full p-8 shadow-2xl border border-blue-100 animate-in zoom-in duration-300">
+                            <div className="w-24 h-24 bg-white rounded-full flex items-center justify-center mx-auto mb-6 p-2 border border-slate-100 shadow-sm overflow-hidden">
+                                <img 
+                                    src="https://iili.io/FsLlXA7.png" 
+                                    alt="Malika Logo" 
+                                    className="w-full h-full object-contain"
+                                />
+                            </div>
+                            <h2 className="text-xl font-black text-slate-800 mb-6 text-center leading-tight uppercase tracking-tight">Instruksi Pengisian</h2>
+                            <div className="space-y-4 text-slate-600 text-sm leading-relaxed mb-8">
+                                <p className="font-bold text-blue-950 text-base">
+                                    Berikut adalah sistem input tugas santri MBS selama liburan semester ganjil:
+                                </p>
+                                <ul className="space-y-4 pl-1">
+                                    <li className="flex gap-3">
+                                        <div className="flex-shrink-0 w-6 h-6 rounded-lg bg-blue-900 text-white flex items-center justify-center text-[10px] font-bold mt-0.5">
+                                            <i data-lucide="video" className="w-3 h-3"></i>
+                                        </div>
+                                        <div>
+                                            Sebelum input tugas disini, pertama, unggah video anda ke Google Drive/Youtube Anda, setel akses ke <strong>"Siapa saja yang memiliki link"</strong>, lalu tempelkan (paste) link-nya.
+                                        </div>
+                                    </li>
+                                    <li className="flex gap-3">
+                                        <div className="flex-shrink-0 w-6 h-6 rounded-lg bg-blue-900 text-white flex items-center justify-center text-[10px] font-bold mt-0.5">
+                                            <i data-lucide="camera" className="w-3 h-3"></i>
+                                        </div>
+                                        <div>
+                                            <span className="font-bold block text-blue-900">Tugas Foto:</span>
+                                            Dapat diunggah <strong>langsung</strong> dari galeri HP/Device Ananda.
+                                        </div>
+                                    </li>
+                                </ul>
+                            </div>
+                            <button onClick={() => setShowIntro(false)} className="w-full bg-blue-950 hover:bg-blue-800 text-white font-bold py-4 px-6 rounded-2xl flex items-center justify-center gap-2 transition-all active:scale-95 shadow-lg shadow-blue-900/20">
+                                Saya Mengerti & Mulai <i data-lucide="arrow-right" className="w-4 h-4"></i>
+                            </button>
+                        </div>
+                    </div>
+                );
+            }
+
+            return (
+                <div className="min-h-screen pb-12">
+                    {isUploadingInBackground && (
+                        <div className="fixed bottom-4 right-4 z-[60] bg-blue-900 text-white px-4 py-2 rounded-full shadow-2xl flex items-center gap-2 animate-bounce">
+                            <i data-lucide="loader-2" className="w-4 h-4 animate-spin"></i>
+                            <span className="text-[10px] font-bold uppercase tracking-widest">Sinkronisasi Data...</span>
+                        </div>
+                    )}
+
+                    <header className="bg-white border-b border-slate-200 sticky top-0 z-10 shadow-sm">
+                        <div className="max-w-4xl mx-auto px-4 py-4 flex flex-col sm:flex-row items-center justify-between gap-4">
+                            <div className="flex items-center gap-4">
+                                <div className="h-12 w-12 rounded-full bg-white border border-slate-100 flex items-center justify-center overflow-hidden p-1.5 shadow-sm">
+                                    <img src="https://iili.io/FsLlXA7.png" alt="Malika Logo" className="w-full h-full object-contain" />
+                                </div>
+                                <div>
+                                    <h1 className="text-lg font-bold text-slate-800 leading-none mb-1">Input Tugas Liburan</h1>
+                                    <p className="text-[9px] text-blue-800 font-black uppercase tracking-widest leading-none">Malika Islamic Boarding School</p>
+                                </div>
+                            </div>
+                        </div>
+                    </header>
+
+                    <main className="max-w-2xl mx-auto px-4 py-6">
+                        <div className="bg-white rounded-[2.5rem] shadow-xl shadow-blue-900/5 border border-slate-100 overflow-hidden">
+                            <div className="p-1.5 bg-gradient-to-r from-blue-950 via-blue-800 to-indigo-900"></div>
+                            <div className="p-8 sm:p-10">
+                                {status === 'success' ? (
+                                    <div className="text-center py-10">
+                                        <div className="w-20 h-20 bg-emerald-50 rounded-full flex items-center justify-center mx-auto mb-6">
+                                            <i data-lucide="check-circle" className="w-12 h-12 text-emerald-600"></i>
+                                        </div>
+                                        <h2 className="text-2xl font-bold text-slate-800 mb-2">Alhamdulillah, Terkirim!</h2>
+                                        <p className="text-slate-600 mb-8 max-w-sm mx-auto">
+                                            Data tugas telah diterima. {isUploadingInBackground ? "Sedang menyelaraskan file di latar belakang..." : "Selesai sinkronisasi."}
+                                        </p>
+                                    </div>
+                                ) : (
+                                    <form onSubmit={handleSubmit} className="space-y-6">
+                                        <div className="grid grid-cols-1 gap-5">
+                                            <div className="space-y-2">
+                                                <label className="text-sm font-bold text-slate-700 flex items-center gap-2 px-1">
+                                                    <i data-lucide="graduation-cap" className="w-4 h-4 text-blue-800"></i> Pilih Kelas
+                                                </label>
+                                                <select required value={selectedClass} onChange={(e) => { setSelectedClass(e.target.value); setSelectedName(''); }} className="w-full bg-slate-50 border-2 border-slate-100 rounded-2xl py-4 px-5 text-slate-800 focus:outline-none focus:border-blue-800 transition-all font-semibold appearance-none">
+                                                    <option value="">-- Kelas --</option>
+                                                    {Object.keys(studentData).map(k => (<option key={k} value={k}>{k}</option>))}
+                                                </select>
+                                            </div>
+
+                                            <div className={`space-y-2 transition-all ${!selectedClass ? 'opacity-30 pointer-events-none' : 'opacity-100'}`}>
+                                                <label className="text-sm font-bold text-slate-700 flex items-center gap-2 px-1">
+                                                    <i data-lucide="user" className="w-4 h-4 text-blue-800"></i> Nama Santri
+                                                </label>
+                                                <select required value={selectedName} onChange={(e) => setSelectedName(e.target.value)} className="w-full bg-slate-50 border-2 border-slate-100 rounded-2xl py-4 px-5 text-slate-800 focus:outline-none focus:border-blue-800 transition-all font-semibold appearance-none">
+                                                    <option value="">-- Nama --</option>
+                                                    {selectedClass && studentData[selectedClass].map(n => (<option key={n} value={n}>{n}</option>))}
+                                                </select>
+                                            </div>
+
+                                            <div className="bg-blue-50/50 p-6 rounded-[2rem] space-y-6 border border-blue-100/50">
+                                                <div className="flex items-center gap-2 mb-1">
+                                                    <i data-lucide="sparkles" className="w-4 h-4 text-blue-600"></i>
+                                                    <h3 className="text-xs font-black text-blue-900/50 uppercase tracking-[0.2em]">Formulir Tugas</h3>
+                                                </div>
+
+                                                <div className="space-y-2">
+                                                    <label className="text-sm font-bold text-slate-700 flex items-center gap-2 px-1">
+                                                        <i data-lucide="video" className="w-4 h-4 text-blue-800"></i> Link Video Bahasa Inggris (Simpan di Akun Google Drive Anda / Akun Youtube Anda terlebih dahulu)
+                                                    </label>
+                                                    <div className="relative group">
+                                                        <input 
+                                                            type="url" 
+                                                            placeholder="Tempel link di sini..."
+                                                            value={videoLink}
+                                                            onChange={(e) => setVideoLink(e.target.value)}
+                                                            className="w-full bg-white border-2 border-slate-100 rounded-2xl py-4 pl-12 pr-5 text-slate-800 placeholder:text-slate-300 focus:outline-none focus:border-blue-800 focus:ring-4 focus:ring-blue-50 transition-all font-medium"
+                                                        />
+                                                        <i data-lucide="link" className="absolute left-5 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400 group-focus-within:text-blue-600 transition-colors"></i>
+                                                    </div>
+                                                </div>
+
+                                                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                                                    <div className="space-y-2">
+                                                        <label className="text-sm font-bold text-slate-700 flex items-center gap-2 px-1"><i data-lucide="book-open" className="w-4 h-4 text-blue-800"></i> Foto Murajaah Qur’an bersama orang tua</label>
+                                                        {!files.murajaahFile ? (
+                                                            <div className="relative group">
+                                                                <input type="file" id="murajaahFile" accept="image/*" onChange={(e) => handleFileChange(e, 'murajaahFile')} className="hidden" />
+                                                                <label htmlFor="murajaahFile" className="flex flex-col items-center justify-center w-full h-24 border-2 border-dashed border-slate-200 rounded-2xl bg-slate-50 hover:bg-blue-50 hover:border-blue-300 transition-all cursor-pointer group">
+                                                                    <i data-lucide="file-up" className="w-6 h-6 text-slate-300 group-hover:text-blue-500 mb-1"></i>
+                                                                    <span className="text-[10px] font-medium text-slate-500 group-hover:text-blue-600 px-4 text-center">Pilih foto</span>
+                                                                </label>
+                                                            </div>
+                                                        ) : (
+                                                            <div className="flex items-center justify-between p-3 bg-blue-50 border border-blue-100 rounded-2xl">
+                                                                <div className="flex items-center gap-3 overflow-hidden">
+                                                                    <div className="bg-blue-800 p-1.5 rounded-lg text-white"><i data-lucide="file-text" className="w-3.5 h-3.5"></i></div>
+                                                                    <p className="text-xs font-bold text-blue-900 truncate">{files.murajaahFile.name}</p>
+                                                                </div>
+                                                                <button type="button" onClick={() => setFiles(p => ({...p, murajaahFile: null}))} className="p-1 hover:bg-blue-200 rounded-full text-blue-400"><i data-lucide="x" className="w-4 h-4"></i></button>
+                                                            </div>
+                                                        )}
+                                                    </div>
+
+                                                    <div className="space-y-2">
+                                                        <label className="text-sm font-bold text-slate-700 flex items-center gap-2 px-1"><i data-lucide="camera" className="w-4 h-4 text-blue-800"></i> Foto Tugas 20 Kosa Kata Arab</label>
+                                                        {!files.arabicVocab ? (
+                                                            <div className="relative group">
+                                                                <input type="file" id="arabicVocab" accept="image/*" onChange={(e) => handleFileChange(e, 'arabicVocab')} className="hidden" />
+                                                                <label htmlFor="arabicVocab" className="flex flex-col items-center justify-center w-full h-24 border-2 border-dashed border-slate-200 rounded-2xl bg-slate-50 hover:bg-blue-50 hover:border-blue-300 transition-all cursor-pointer group">
+                                                                    <i data-lucide="file-up" className="w-6 h-6 text-slate-300 group-hover:text-blue-500 mb-1"></i>
+                                                                    <span className="text-[10px] font-medium text-slate-500 group-hover:text-blue-600 px-4 text-center">Pilih foto</span>
+                                                                </label>
+                                                            </div>
+                                                        ) : (
+                                                            <div className="flex items-center justify-between p-3 bg-blue-50 border border-blue-100 rounded-2xl">
+                                                                <div className="flex items-center gap-3 overflow-hidden">
+                                                                    <div className="bg-blue-800 p-1.5 rounded-lg text-white"><i data-lucide="file-text" className="w-3.5 h-3.5"></i></div>
+                                                                    <p className="text-xs font-bold text-blue-900 truncate">{files.arabicVocab.name}</p>
+                                                                </div>
+                                                                <button type="button" onClick={() => setFiles(p => ({...p, arabicVocab: null}))} className="p-1 hover:bg-blue-200 rounded-full text-blue-400"><i data-lucide="x" className="w-4 h-4"></i></button>
+                                                            </div>
+                                                        )}
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+
+                                        <button type="submit" className="w-full bg-blue-950 hover:bg-slate-800 text-white font-bold py-5 px-6 rounded-2xl shadow-xl flex items-center justify-center gap-3 text-lg transition-all active:scale-[0.98]">
+                                            <i data-lucide="send" className="w-5 h-5"></i> Kirim Tugas
+                                        </button>
+                                    </form>
+                                )}
+                            </div>
+                        </div>
+                    </main>
+                    <footer className="mt-4 text-center text-slate-300 text-[10px] uppercase tracking-[0.3em] font-black pb-8">Malika Islamic Boarding School</footer>
+                </div>
+            );
+        }
+
+        const root = ReactDOM.createRoot(document.getElementById('root'));
+        root.render(<App />);
+    </script>
+</body>
+</html>
